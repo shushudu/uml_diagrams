@@ -1,0 +1,49 @@
+@startuml
+hide empty description
+scale max 800 width
+
+<style>
+stateDiagram {
+  LineColor black
+}
+</style>
+
+skinparam state {
+  BackgroundColor #white
+  BackgroundColor<<LongTime>> #9F9
+  BorderColor #black
+}
+
+Title Поддержка постоянного клиентского TCP соединения
+
+state TcpClientConnection {
+
+state WaitConf <<LongTime>>
+state Disconnected <<LongTime>>
+state Connected <<LongTime>>
+
+[*] --> WaitConf : start
+
+WaitConf -[#green]-> CheckConf : new_conf
+WaitConf -[#green]-> [*] : stop
+
+CheckConf -[#red]-> WaitConf : error
+CheckConf --> Disconnected : ok
+
+Disconnected -[#green]-> [*] : stop
+Disconnected -[#green]-> TryConnect : connect
+
+TryConnect --> Connected : connected
+TryConnect -[#red]-> Waiting : error
+
+Connected -[#green]-> TryDisconnect : stop
+Connected -[#red]-> Waiting : error
+
+TryDisconnect --> [*] : ok
+
+
+Waiting --> TryConnect : timeout
+Waiting -[#green]-> [*] : stop
+
+}
+@enduml
