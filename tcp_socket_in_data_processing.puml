@@ -2,13 +2,29 @@
 hide empty description
 scale max 800 width
 
+<style>
+stateDiagram {
+  LineColor black
+}
+</style>
+
+skinparam state {
+  BackgroundColor #white
+  BackgroundColor<<LongTime>> #9F9
+  BorderColor #black
+}
+
 Title Преобразование получаемых данных по TCP в сообщения
 
 state InDataProcessing {
-[*] --> ОжиданиеВходящихДанных : start
-ОжиданиеВходящихДанных --> БуферизацияВходящихДанных : new_data
-ОжиданиеВходящихДанных --> [*] : stop\nerror
-БуферизацияВходящихДанных --> [*] : error
+
+state ОжиданиеВходящихДанных <<LongTime>>
+
+[*] -[#green]-> ОжиданиеВходящихДанных : start
+ОжиданиеВходящихДанных -[#green]-> БуферизацияВходящихДанных : new_data
+ОжиданиеВходящихДанных -[#red]-> [*] : error
+ОжиданиеВходящихДанных --> [*] : stop
+БуферизацияВходящихДанных -[#red]-> [*] : error
 БуферизацияВходящихДанных --> ПопыткаИзвлеченияСообщения : ok
 ПопыткаИзвлеченияСообщения --> ВыбросСообщения : new_msg
 ПопыткаИзвлеченияСообщения --> ОжиданиеВходящихДанных : no_full_msg
