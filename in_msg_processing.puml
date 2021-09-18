@@ -19,18 +19,31 @@ Title Преобразование получаемых данных по TCP в
 state InMsgProcessing {
 
 state WaitMsg <<LongTime>>
+state ApplyServiceCommand <<choise>>
 
-[*] -[#green]-> TryGetMsqFromQueue : start
+[*] -[#green]-> WaitMsg : start
 
 TryGetMsqFromQueue --> WaitMsg : no_msg
-TryGetMsqFromQueue --> RoutingMsg : msg
+TryGetMsqFromQueue -[#green]-> CheckMsgType : msg
 
-WaitMsg -> [*] : stop
-WaitMsg --> TryGetMsqFromQueue : timeout
+WaitMsg -[#green]-> [*] : stop
+WaitMsg -[#green]-> TryGetMsqFromQueue : timeout
 
+CheckMsgType -[#red]-> IgnoreMsg : unknown
+CheckMsgType --> ApplyConnectionCommand : msg_for_connection
+CheckMsgType -[#green]-> DetermineService : msg_for_service
 
-RoutingMsg -> [*] : error
-RoutingMsg -> TryGetMsqFromQueue : ok
+IgnoreMsg --> TryGetMsqFromQueue : ok
+
+ApplyConnectionCommand -[#red]->IgnoreMsg : error
+ApplyConnectionCommand --> TryGetMsqFromQueue : ok
+
+DetermineService -[#red]-> IgnoreMsg : no_service_found
+DetermineService -[#green]-> ApplyServiceCommand : service_found
+
+ApplyServiceCommand -[#red]->IgnoreMsg : error
+ApplyServiceCommand -[#green]-> TryGetMsqFromQueue : ok
+
 
 }
 @enduml
