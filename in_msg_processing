@@ -1,0 +1,36 @@
+@startuml
+hide empty description
+scale max 800 width
+
+<style>
+stateDiagram {
+  LineColor black
+}
+</style>
+
+skinparam state {
+  BackgroundColor #white
+  BackgroundColor<<LongTime>> #9F9
+  BorderColor #black
+}
+
+Title Преобразование получаемых данных по TCP в сообщения
+
+state InMsgProcessing {
+
+state WaitMsg <<LongTime>>
+
+[*] -[#green]-> TryGetMsqFromQueue : start
+
+TryGetMsqFromQueue --> WaitMsg : no_msg
+TryGetMsqFromQueue --> RoutingMsg : msg
+
+WaitMsg -> [*] : stop
+WaitMsg --> TryGetMsqFromQueue : timeout
+
+
+RoutingMsg -> [*] : error
+RoutingMsg -> TryGetMsqFromQueue : ok
+
+}
+@enduml
