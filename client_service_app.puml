@@ -1,0 +1,33 @@
+@startuml
+hide empty description
+'scale 800 width
+'scale 600 height
+'scale max 600 width
+
+Title Клиентское приложение
+
+state ClientServiceApp {
+
+[*] --> LoadLocalSettings : start
+
+LoadLocalSettings --> [*] : error
+LoadLocalSettings --> PreparingForConnectToRouter : ok
+
+PreparingForConnectToRouter --> [*] : error
+PreparingForConnectToRouter --> WaitConnectedEvent : ok
+
+WaitConnectedEvent --> SendInitInfoToRouter : connected
+WaitConnectedEvent --> [*] : stop
+
+SendInitInfoToRouter --> WaitEvents : ok
+SendInitInfoToRouter --> [*] : error
+SendInitInfoToRouter --> SendInitInfoToRouter : new_msg
+
+WaitEvents --> PreparingForConnectToRouter : disconnected
+WaitEvents --> [*] : stop
+WaitEvents --> ProcessMsg : new_msg
+
+ProcessMsg --> WaitEvents : ok
+ProcessMsg --> [*] : error
+}
+@enduml
