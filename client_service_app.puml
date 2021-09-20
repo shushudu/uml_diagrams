@@ -1,33 +1,52 @@
 @startuml
 hide empty description
-'scale 800 width
-'scale 600 height
-'scale max 600 width
+scale max 800 width
+
+<style>
+stateDiagram {
+  LineColor black
+}
+</style>
+
+skinparam state {
+  BackgroundColor #white
+  BackgroundColor<<LongTime>> #9F9
+  BorderColor #black
+}
 
 Title Клиентское приложение
 
 state ClientServiceApp {
 
-[*] --> LoadLocalSettings : start
+state WaitConnectedEvent <<LongTime>>
+state SendInitInfoToRouter <<LongTime>>
+state WaitEvents <<LongTime>>
+state WaitDisconnectedEvent <<LongTime>>
 
-LoadLocalSettings --> [*] : error
-LoadLocalSettings --> PreparingForConnectToRouter : ok
+[*] -[#blue]-> LoadLocalSettings : start
 
-PreparingForConnectToRouter --> [*] : error
-PreparingForConnectToRouter --> WaitConnectedEvent : ok
+LoadLocalSettings -[#red]-> [*] : error
+LoadLocalSettings -[#green]-> PreparingForConnectToRouter : ok
 
-WaitConnectedEvent --> SendInitInfoToRouter : connected
-WaitConnectedEvent --> [*] : stop
+PreparingForConnectToRouter -[#red]-> [*] : error
+PreparingForConnectToRouter -[#green]-> WaitConnectedEvent : ok
 
-SendInitInfoToRouter --> WaitEvents : ok
-SendInitInfoToRouter --> [*] : error
-SendInitInfoToRouter --> SendInitInfoToRouter : new_msg
+WaitConnectedEvent -[#green]-> SendInitInfoToRouter : connected
+WaitConnectedEvent -[#blue]-> [*] : stop
 
-WaitEvents --> PreparingForConnectToRouter : disconnected
-WaitEvents --> [*] : stop
-WaitEvents --> ProcessMsg : new_msg
+SendInitInfoToRouter -[#green]-> WaitEvents : ok
+SendInitInfoToRouter -up[#red]-> Disconnect : error
+SendInitInfoToRouter -[#green]-> SendInitInfoToRouter : new_msg
 
-ProcessMsg --> WaitEvents : ok
-ProcessMsg --> [*] : error
+Disconnect -up-> WaitDisconnectedEvent : ok
+
+WaitDisconnectedEvent -up-> PreparingForConnectToRouter : disconnected
+
+WaitEvents -[#red]-> PreparingForConnectToRouter : disconnected
+WaitEvents -[#blue]-> [*] : stop
+WaitEvents -[#green]-> ProcessMsg : new_msg
+
+ProcessMsg -[#green]-> WaitEvents : ok
+ProcessMsg -[#red]-> WaitEvents : error
 }
 @enduml
