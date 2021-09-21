@@ -1,0 +1,53 @@
+@startuml
+hide empty description
+scale max 800 width
+
+<style>
+stateDiagram {
+  LineColor black
+}
+</style>
+
+skinparam state {
+  BackgroundColor #white
+  BackgroundColor<<LongTime>> #9F9
+  BorderColor #black
+}
+
+Title Клиентское приложение
+
+state VarClientService {
+
+state WaitConfiguration <<LongTime>>
+state WaitConnectedEvent <<LongTime>>
+state SendInitInfoToRouter <<LongTime>>
+state WaitEvents <<LongTime>>
+state WaitDisconnectedEvent <<LongTime>>
+
+[*] -[#blue]-> WaitConfiguration : start
+WaitConfiguration -[#green]-> ApplyConfiguration : new_conf
+WaitConfiguration -[#blue]-> [*] : stop
+
+ApplyConfiguration -[#green]-> WaitConnectedEvent : ok
+ApplyConfiguration -[#red]-> WaitConfiguration : error
+
+
+WaitConnectedEvent -[#green]-> SendInitInfoToRouter : connected
+WaitConnectedEvent -[#blue]-> [*] : stop
+
+SendInitInfoToRouter -[#green]-> WaitEvents : ok
+SendInitInfoToRouter -up[#red]-> Disconnect : error
+SendInitInfoToRouter -[#green]-> SendInitInfoToRouter : new_msg
+
+Disconnect -up-> WaitDisconnectedEvent : ok
+
+WaitDisconnectedEvent -up-> ApplyConfiguration : disconnected
+
+WaitEvents -[#red]-> ApplyConfiguration : disconnected
+WaitEvents -[#blue]-> [*] : stop
+WaitEvents -[#green]-> ProcessMsg : new_msg
+
+ProcessMsg -[#green]-> WaitEvents : ok
+ProcessMsg -[#red]-> WaitEvents : error
+}
+@enduml
